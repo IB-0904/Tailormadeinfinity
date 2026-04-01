@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+streamlit.log
+test_resume.txt
+test_resume.docx

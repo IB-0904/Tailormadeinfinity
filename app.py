@@ -3,6 +3,7 @@ import google.generativeai as genai
 import json
 from utils import extract_text_from_file
 from pdf_generator import generate_harvard_pdf
+from docx_generator import generate_harvard_docx
 
 def configure_gemini(api_key):
     try:
@@ -178,21 +179,34 @@ def main():
                                 st.markdown("### Skills")
                                 st.markdown(resume_data['skills'])
                             
-                            # Generate and offer the PDF download
+                            # Generate files
                             pdf_bytes = generate_harvard_pdf(resume_data)
+                            docx_bytes = generate_harvard_docx(resume_data)
                             
                             # Format filename based on job title
                             safe_job_title = resume_data.get('job_title', 'Tailored').replace(' ', '_').replace('/', '-')
-                            filename = f"{safe_job_title}_Resume.pdf"
+                            pdf_filename = f"{safe_job_title}_Resume.pdf"
+                            docx_filename = f"{safe_job_title}_Resume.docx"
                             
-                            st.success(f"Resume tailored successfully! You can download it as a Harvard-formatted PDF below.")
-                            st.download_button(
-                                label=f"📥 Download your Resume ({filename})",
-                                data=pdf_bytes,
-                                file_name=filename,
-                                mime="application/pdf",
-                                use_container_width=True
-                            )
+                            st.success("Resume tailored successfully! Choose a format to download:")
+                            
+                            d_col1, d_col2 = st.columns(2)
+                            with d_col1:
+                                st.download_button(
+                                    label=f"📥 Download PDF",
+                                    data=pdf_bytes,
+                                    file_name=pdf_filename,
+                                    mime="application/pdf",
+                                    use_container_width=True
+                                )
+                            with d_col2:
+                                st.download_button(
+                                    label=f"📝 Download Word DOCX",
+                                    data=docx_bytes,
+                                    file_name=docx_filename,
+                                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                                    use_container_width=True
+                                )
                             
                         elif generate_cl_btn:
                             st.subheader("Your Cover Letter")

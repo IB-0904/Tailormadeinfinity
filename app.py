@@ -95,7 +95,7 @@ def generate_cover_letter(model, resume_text, job_description):
 def main():
     st.set_page_config(page_title="Tailor Made Infinity", page_icon="📄", layout="wide")
     
-    st.title("📄 LetMeApply Clone - AI Resume & Cover Letter Generator")
+    st.title("📄 Tailor Made Infinity - AI Resume & Cover Letter Generator")
     st.markdown("Tailor your resume and generate cover letters using Google's Gemini AI.")
 
     # Sidebar for API Key
@@ -111,15 +111,15 @@ def main():
     col1, col2 = st.columns(2)
 
     with col1:
-        st.subheader("1. Upload Resume")
+        st.subheader("Upload an existing Resume")
         uploaded_resume = st.file_uploader("Upload your base resume (PDF, DOCX, TXT)", type=["pdf", "docx", "txt"])
 
     with col2:
-        st.subheader("2. Job Description")
+        st.subheader("Desired Job Description")
         job_description = st.text_area("Paste the job description here:", height=200)
 
     st.markdown("---")
-    st.subheader("3. Generate Application Materials")
+    st.subheader("Generate")
     
     col3, col4 = st.columns(2)
     
@@ -187,7 +187,7 @@ def main():
                             
                             st.success(f"Resume tailored successfully! You can download it as a Harvard-formatted PDF below.")
                             st.download_button(
-                                label=f"📥 Download Harvard Resume ({filename})",
+                                label=f"📥 Download your Resume ({filename})",
                                 data=pdf_bytes,
                                 file_name=filename,
                                 mime="application/pdf",

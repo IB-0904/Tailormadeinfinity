@@ -60,18 +60,11 @@ def generate_tailored_resume(model, resume_text, job_description):
     {resume_text}
     """
     
-    # We use lower temperature for more deterministic JSON output
     response = model.generate_content(prompt, generation_config=genai.types.GenerationConfig(temperature=0.2))
-    
-    # Clean up the response in case the model added markdown blocks
     text = response.text.strip()
-    if text.startswith('```json'):
-        text = text[7:]
-    if text.startswith('```'):
-        text = text[3:]
-    if text.endswith('```'):
-        text = text[:-3]
-        
+    if text.startswith('```json'): text = text[7:]
+    if text.startswith('```'): text = text[3:]
+    if text.endswith('```'): text = text[:-3]
     return json.loads(text.strip())
 
 def generate_cover_letter(model, resume_text, job_description):
@@ -89,49 +82,75 @@ def generate_cover_letter(model, resume_text, job_description):
     
     Cover Letter:
     """
-    
     response = model.generate_content(prompt)
     return response.text
 
 def main():
-    st.set_page_config(page_title="Tailor Made Infinity", page_icon="📄", layout="wide")
+    st.set_page_config(page_title="LetMeApply AI", page_icon="✨", layout="wide", initial_sidebar_state="expanded")
     
-    st.title("📄 Tailor Made Infinity - AI Resume & Cover Letter Generator")
-    st.markdown("Tailor your resume and generate cover letters using Google's Gemini AI.")
+    # Custom CSS for a slight UI lift
+    st.markdown("""
+    <style>
+    .stButton>button {
+        border-radius: 8px;
+        font-weight: bold;
+    }
+    .main-header {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #1E3A8A;
+        margin-bottom: 0px;
+    }
+    .sub-header {
+        font-size: 1.2rem;
+        color: #6B7280;
+        margin-bottom: 2rem;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    st.markdown('<p class="main-header">✨ LetMeApply AI</p>', unsafe_allow_html=True)
+    st.markdown('<p class="sub-header">Instantly tailor your resume and generate cover letters to beat the ATS.</p>', unsafe_allow_html=True)
 
     # Sidebar for API Key
     with st.sidebar:
-        st.header("Settings")
-        api_key = st.text_input("Enter your Gemini API Key:", type="password")
-        st.markdown("[Get your free Gemini API key here](https://aistudio.google.com/app/apikey)")
+        st.image("https://cdn-icons-png.flaticon.com/512/3135/3135679.png", width=80)
+        st.header("⚙️ Configuration")
+        api_key = st.text_input("Gemini API Key:", type="password", help="Required to connect to Google's AI models.")
+        st.caption("[Get a free API key here](https://aistudio.google.com/app/apikey)")
         st.markdown("---")
-        st.markdown("### About")
-        st.markdown("This is a Personnel project Created by Issac for personal use, powered by Google's Gemini Pro.")
+        st.markdown("### 💡 Tips")
+        st.info("- Make sure your base resume has all your possible history.\n- Paste the full job description.")
+        st.markdown("---")
+        st.caption("Free LetMeApply clone for personal use.")
 
-    # Main Area
-    col1, col2 = st.columns(2)
+    # Main Area Layout
+    st.markdown("### 1. Provide Your Details")
+    
+    col1, col2 = st.columns(2, gap="large")
 
     with col1:
-        st.subheader("Upload an existing Resume")
-        uploaded_resume = st.file_uploader("Upload your base resume (PDF, DOCX, TXT)", type=["pdf", "docx", "txt"])
+        with st.container(border=True):
+            st.subheader("📄 Base Resume")
+            uploaded_resume = st.file_uploader("Upload your current resume", type=["pdf", "docx", "txt"])
 
     with col2:
-        st.subheader("Desired Job Description")
-        job_description = st.text_area("Paste the job description here:", height=200)
+        with st.container(border=True):
+            st.subheader("🎯 Job Description")
+            job_description = st.text_area("Paste the job posting text here:", height=150, placeholder="We are looking for a highly motivated Software Engineer...")
 
     st.markdown("---")
-    st.subheader("Generate")
+    st.markdown("### 2. Generate Application Materials")
     
-    col3, col4 = st.columns(2)
+    action_col1, action_col2 = st.columns(2)
     
-    with col3:
-        tailor_resume_btn = st.button("🚀 Tailor Resume to Job Description", use_container_width=True)
+    with action_col1:
+        tailor_resume_btn = st.button("🚀 Tailor Resume to Job Description", use_container_width=True, type="primary")
     
-    with col4:
-        generate_cl_btn = st.button("📝 Generate Cover Letter", use_container_width=True)
+    with action_col2:
+        generate_cl_btn = st.button("📝 Generate Custom Cover Letter", use_container_width=True)
 
-    # Results section
-    st.markdown("### Results")
+    st.write("") # spacer
 
     if tailor_resume_btn or generate_cl_btn:
         if not api_key:
@@ -150,68 +169,79 @@ def main():
                         resume_text = extract_text_from_file(uploaded_resume)
                         
                         if tailor_resume_btn:
-                            st.subheader("Your Tailored Resume")
-                            
                             # The AI returns JSON now
                             resume_data = generate_tailored_resume(model, resume_text, job_description)
                             
-                            # Display it nicely in markdown for the user to review
-                            st.markdown(f"**{resume_data.get('name', '')}**")
-                            st.markdown(f"*{resume_data.get('contact_info', '')}*")
+                            st.balloons()
                             
-                            if resume_data.get('summary'):
-                                st.markdown("### Professional Summary")
-                                st.markdown(resume_data['summary'])
+                            # Interactive Tabs for viewing vs downloading
+                            tab1, tab2 = st.tabs(["📥 Download Options", "👀 Preview Content"])
                             
-                            if resume_data.get('experience'):
-                                st.markdown("### Experience")
-                                for exp in resume_data['experience']:
-                                    st.markdown(f"**{exp.get('title')}** at {exp.get('company')} ({exp.get('dates')})")
-                                    for bullet in exp.get('bullets', []):
-                                        st.markdown(f"- {bullet}")
-                            
-                            if resume_data.get('education'):
-                                st.markdown("### Education")
-                                for edu in resume_data['education']:
-                                    st.markdown(f"**{edu.get('degree')}** from {edu.get('institution')} ({edu.get('dates')})")
-                            
-                            if resume_data.get('skills'):
-                                st.markdown("### Skills")
-                                st.markdown(resume_data['skills'])
-                            
-                            # Generate files
-                            pdf_bytes = generate_harvard_pdf(resume_data)
-                            docx_bytes = generate_harvard_docx(resume_data)
-                            
-                            # Format filename based on job title
-                            safe_job_title = resume_data.get('job_title', 'Tailored').replace(' ', '_').replace('/', '-')
-                            pdf_filename = f"{safe_job_title}_Resume.pdf"
-                            docx_filename = f"{safe_job_title}_Resume.docx"
-                            
-                            st.success("Resume tailored successfully! Choose a format to download:")
-                            
-                            d_col1, d_col2 = st.columns(2)
-                            with d_col1:
-                                st.download_button(
-                                    label=f"📥 Download PDF",
-                                    data=pdf_bytes,
-                                    file_name=pdf_filename,
-                                    mime="application/pdf",
-                                    use_container_width=True
-                                )
-                            with d_col2:
-                                st.download_button(
-                                    label=f"📝 Download Word DOCX",
-                                    data=docx_bytes,
-                                    file_name=docx_filename,
-                                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                                    use_container_width=True
-                                )
-                            
+                            with tab1:
+                                st.success("🎉 Resume tailored successfully!")
+                                st.write("Your ATS-optimized resume is ready. Choose a format to download below.")
+                                
+                                # Generate files
+                                pdf_bytes = generate_harvard_pdf(resume_data)
+                                docx_bytes = generate_harvard_docx(resume_data)
+                                
+                                # Format filename based on job title
+                                safe_job_title = resume_data.get('job_title', 'Tailored').replace(' ', '_').replace('/', '-')
+                                pdf_filename = f"{safe_job_title}_Resume.pdf"
+                                docx_filename = f"{safe_job_title}_Resume.docx"
+                                
+                                d_col1, d_col2 = st.columns(2)
+                                with d_col1:
+                                    st.download_button(
+                                        label=f"📥 Download PDF Document",
+                                        data=pdf_bytes,
+                                        file_name=pdf_filename,
+                                        mime="application/pdf",
+                                        use_container_width=True,
+                                        type="primary"
+                                    )
+                                with d_col2:
+                                    st.download_button(
+                                        label=f"📝 Download Word Document",
+                                        data=docx_bytes,
+                                        file_name=docx_filename,
+                                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                                        use_container_width=True
+                                    )
+
+                            with tab2:
+                                with st.container(border=True):
+                                    # Display it nicely in markdown for the user to review
+                                    st.markdown(f"### {resume_data.get('name', '')}")
+                                    st.caption(f"{resume_data.get('contact_info', '')}")
+                                    st.divider()
+                                    
+                                    if resume_data.get('summary'):
+                                        st.markdown("**Professional Summary**")
+                                        st.write(resume_data['summary'])
+                                    
+                                    if resume_data.get('experience'):
+                                        st.markdown("**Experience**")
+                                        for exp in resume_data['experience']:
+                                            st.markdown(f"**{exp.get('title')}** at {exp.get('company')} *( {exp.get('dates')} )*")
+                                            for bullet in exp.get('bullets', []):
+                                                st.markdown(f"- {bullet}")
+                                    
+                                    if resume_data.get('education'):
+                                        st.markdown("**Education**")
+                                        for edu in resume_data['education']:
+                                            st.markdown(f"**{edu.get('degree')}** from {edu.get('institution')} *( {edu.get('dates')} )*")
+                                    
+                                    if resume_data.get('skills'):
+                                        st.markdown("**Skills**")
+                                        st.write(resume_data['skills'])
+                                        
                         elif generate_cl_btn:
-                            st.subheader("Your Cover Letter")
-                            cover_letter = generate_cover_letter(model, resume_text, job_description)
-                            st.markdown(cover_letter)
+                            st.balloons()
+                            st.success("🎉 Cover Letter generated successfully!")
+                            with st.container(border=True):
+                                cover_letter = generate_cover_letter(model, resume_text, job_description)
+                                st.markdown(cover_letter)
                 except Exception as e:
                     st.error(f"An error occurred: {str(e)}")
 

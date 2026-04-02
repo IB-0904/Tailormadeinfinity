@@ -86,7 +86,7 @@ def generate_cover_letter(model, resume_text, job_description):
     return response.text
 
 def main():
-    st.set_page_config(page_title="LetMeApply AI", page_icon="✨", layout="wide", initial_sidebar_state="expanded")
+    st.set_page_config(page_title="Tailor Made Infinity", page_icon="✨", layout="wide", initial_sidebar_state="expanded")
     
     # Custom CSS for a slight UI lift
     st.markdown("""
@@ -109,7 +109,7 @@ def main():
     </style>
     """, unsafe_allow_html=True)
     
-    st.markdown('<p class="main-header">✨ LetMeApply AI</p>', unsafe_allow_html=True)
+    st.markdown('<p class="main-header">✨ Tailor Made Infinity AI</p>', unsafe_allow_html=True)
     st.markdown('<p class="sub-header">Instantly tailor your resume and generate cover letters to beat the ATS.</p>', unsafe_allow_html=True)
 
     # Sidebar for API Key

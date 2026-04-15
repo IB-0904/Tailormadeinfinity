@@ -122,7 +122,7 @@ def main():
         st.markdown("### 💡 Tips")
         st.info("- Make sure your base resume has all your possible history.\n- Paste the full job description.")
         st.markdown("---")
-        st.caption("Free LetMeApply clone for personal use.")
+        st.caption("Pesonnel Project for personal use.")
 
     # Main Area Layout
     st.markdown("### 1. Provide Your Details")
